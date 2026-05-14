@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather App</title>
+    <title>Weather & Prayer Times</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
@@ -20,6 +20,10 @@
             --detail-card: rgba(0,0,0,0.05);
             --toggle-bg: #ddd;
             --btn-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --prayer-active: #27ae60;
+            --prayer-highlight: rgba(39,174,96,0.1);
+            --prayer-border: #27ae60;
+            --prayer-next-bg: rgba(39,174,96,0.12);
         }
         [data-theme="dark"] {
             --bg: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -35,6 +39,10 @@
             --detail-card: rgba(255,255,255,0.08);
             --toggle-bg: #444;
             --btn-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --prayer-active: #2ecc71;
+            --prayer-highlight: rgba(46,204,113,0.15);
+            --prayer-border: #2ecc71;
+            --prayer-next-bg: rgba(46,204,113,0.1);
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -44,10 +52,7 @@
             color: var(--text);
             transition: background 0.3s, color 0.3s;
         }
-        .container {
-            max-width: 520px;
-            margin: 0 auto;
-        }
+        .container { max-width: 520px; margin: 0 auto; }
 
         .header {
             display: flex;
@@ -57,7 +62,7 @@
         }
         .header h1 {
             color: white;
-            font-size: 24px;
+            font-size: 22px;
             text-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
         .theme-toggle {
@@ -82,9 +87,7 @@
             transition: transform 0.3s;
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
-        [data-theme="dark"] .theme-toggle::after {
-            transform: translateX(24px);
-        }
+        [data-theme="dark"] .theme-toggle::after { transform: translateX(24px); }
         .theme-toggle-icon {
             position: absolute;
             top: 4px;
@@ -98,67 +101,110 @@
         .card {
             background: var(--card-bg);
             border-radius: 20px;
-            padding: 30px;
+            padding: 25px;
             box-shadow: var(--card-shadow);
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             transition: background 0.3s, box-shadow 0.3s;
         }
 
-        .city-name { font-size: 28px; font-weight: bold; margin-bottom: 2px; }
+        .city-name { font-size: 26px; font-weight: bold; margin-bottom: 2px; }
         .date { color: var(--text-secondary); font-size: 14px; margin-bottom: 5px; }
-        .country-badge {
-            display: inline-block;
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 20px;
-        }
-
         .main-weather { text-align: center; }
-        .weather-icon { font-size: 80px; margin-bottom: 10px; }
+        .weather-icon { font-size: 70px; margin-bottom: 8px; }
         .temperature {
-            font-size: 72px;
+            font-size: 64px;
             font-weight: 300;
             line-height: 1;
             margin-bottom: 5px;
         }
-        .weather-desc { font-size: 20px; color: var(--text-secondary); margin-bottom: 5px; }
-        .feels-like { font-size: 14px; color: var(--text-muted); }
+        .weather-desc { font-size: 18px; color: var(--text-secondary); margin-bottom: 3px; }
+        .feels-like { font-size: 14px; color: var(--text-muted); margin-bottom: 12px; }
 
         .details-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-top: 25px;
+            gap: 8px;
+            margin-top: 18px;
         }
         .detail-card {
             background: var(--detail-card);
             border-radius: 12px;
-            padding: 12px 8px;
+            padding: 10px 6px;
             text-align: center;
             transition: background 0.3s;
         }
-        .detail-card .label {
-            font-size: 10px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
-        }
-        .detail-card .icon { font-size: 20px; margin-bottom: 2px; }
-        .detail-card .value {
-            font-size: 16px;
-            font-weight: bold;
-        }
-        .detail-card .sub {
-            font-size: 11px;
-            color: var(--text-muted);
-        }
+        .detail-card .label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .detail-card .icon { font-size: 18px; }
+        .detail-card .value { font-size: 15px; font-weight: bold; }
+        .detail-card .sub { font-size: 10px; color: var(--text-muted); }
 
         .section-title {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .prayer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .hijri-date {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .method-select {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        .prayer-row {
+            display: flex;
+            align-items: center;
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-bottom: 4px;
+            transition: background 0.3s;
+        }
+        .prayer-row.passed { opacity: 0.5; }
+        .prayer-row.next {
+            background: var(--prayer-next-bg);
+            border: 1px solid var(--prayer-border);
+            opacity: 1;
+        }
+        .prayer-row .prayer-icon { font-size: 20px; width: 30px; text-align: center; }
+        .prayer-row .prayer-name { flex: 1; font-size: 14px; font-weight: 500; margin-left: 10px; }
+        .prayer-row .prayer-time { font-size: 15px; font-weight: 600; }
+        .prayer-row .prayer-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 8px;
+            font-weight: 600;
+        }
+        .prayer-row.next .prayer-badge {
+            background: var(--prayer-active);
+            color: white;
+        }
+        .prayer-row.passed .prayer-badge {
+            background: var(--detail-card);
+            color: var(--text-muted);
+        }
+        .prayer-row .prayer-remaining {
+            font-size: 11px;
+            color: var(--prayer-active);
+            margin-left: 8px;
+            font-weight: 500;
         }
 
         .hourly-scroll {
@@ -170,42 +216,29 @@
         }
         .hourly-scroll::-webkit-scrollbar { height: 4px; }
         .hourly-scroll::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
-        .hourly-item {
-            flex: 0 0 60px;
-            text-align: center;
-        }
-        .hourly-item .time-label { font-size: 12px; color: var(--text-muted); }
-        .hourly-item .hourly-icon { font-size: 24px; margin: 4px 0; }
-        .hourly-item .hourly-temp { font-size: 14px; font-weight: 600; }
+        .hourly-item { flex: 0 0 56px; text-align: center; }
+        .hourly-item .time-label { font-size: 11px; color: var(--text-muted); }
+        .hourly-item .hourly-icon { font-size: 22px; margin: 3px 0; }
+        .hourly-item .hourly-temp { font-size: 13px; font-weight: 600; }
 
         .weekly-item {
             display: flex;
             align-items: center;
-            padding: 12px 0;
+            padding: 10px 0;
             border-bottom: 1px solid var(--detail-card);
         }
         .weekly-item:last-child { border-bottom: none; }
-        .weekly-item .day-name { flex: 0 0 100px; font-weight: 500; }
-        .weekly-item .weekly-icon { font-size: 28px; flex: 0 0 40px; text-align: center; }
-        .weekly-item .weekly-icon-small { font-size: 16px; flex: 0 0 30px; text-align: center; }
-        .weekly-item .weekly-desc { flex: 1; font-size: 13px; color: var(--text-secondary); }
+        .weekly-item .day-name { flex: 0 0 90px; font-weight: 500; font-size: 14px; }
+        .weekly-item .weekly-icon { font-size: 24px; flex: 0 0 36px; text-align: center; }
+        .weekly-item .weekly-desc { flex: 1; font-size: 12px; color: var(--text-secondary); }
         .weekly-item .weekly-temps { text-align: right; }
         .weekly-item .high { font-weight: 600; }
-        .weekly-item .low { color: var(--text-muted); margin-left: 8px; }
-        .weekly-item .uv-index {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-align: center;
-            flex: 0 0 30px;
-        }
+        .weekly-item .low { color: var(--text-muted); margin-left: 6px; }
 
-        .search-box {
-            display: flex;
-            gap: 10px;
-        }
+        .search-box { display: flex; gap: 10px; }
         .search-box input {
             flex: 1;
-            padding: 12px 16px;
+            padding: 11px 14px;
             border: 2px solid var(--input-border);
             border-radius: 10px;
             font-size: 14px;
@@ -216,7 +249,7 @@
         }
         .search-box input:focus { border-color: var(--input-focus); }
         .search-box button {
-            padding: 12px 24px;
+            padding: 11px 22px;
             background: var(--btn-bg);
             border: none;
             border-radius: 10px;
@@ -231,34 +264,30 @@
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-top: 10px;
+            margin-top: 8px;
         }
         .saved-city-chip {
             display: inline-flex;
             align-items: center;
             gap: 6px;
             background: var(--detail-card);
-            padding: 8px 14px;
+            padding: 7px 12px;
             border-radius: 20px;
-            font-size: 13px;
+            font-size: 12px;
             cursor: pointer;
             transition: background 0.2s;
         }
         .saved-city-chip:hover { background: var(--input-border); }
-        .saved-city-chip .remove {
-            cursor: pointer;
-            opacity: 0.5;
-            font-size: 14px;
-        }
+        .saved-city-chip .remove { cursor: pointer; opacity: 0.5; font-size: 13px; }
         .saved-city-chip .remove:hover { opacity: 1; }
         .add-current-btn {
             display: inline-flex;
             align-items: center;
             gap: 6px;
             background: var(--detail-card);
-            padding: 8px 14px;
+            padding: 7px 12px;
             border-radius: 20px;
-            font-size: 13px;
+            font-size: 12px;
             cursor: pointer;
             border: 1px dashed var(--text-muted);
             color: var(--text-secondary);
@@ -270,84 +299,75 @@
             background: rgba(231,76,60,0.1);
             border: 1px solid rgba(231,76,60,0.3);
             border-radius: 10px;
-            padding: 15px;
+            padding: 14px;
             text-align: center;
             color: #e74c3c;
+            font-size: 14px;
         }
         .error-box button {
             margin-top: 8px;
-            padding: 8px 20px;
+            padding: 7px 18px;
             background: #e74c3c;
             color: white;
             border: none;
             border-radius: 6px;
             cursor: pointer;
+            font-size: 13px;
         }
 
-        .skeleton {
-            background: var(--skeleton);
-            border-radius: 8px;
-            animation: pulse 1.5s infinite;
-            transition: background 0.3s;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
+        .skeleton { background: var(--skeleton); border-radius: 8px; animation: pulse 1.5s infinite; transition: background 0.3s; }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
         .skeleton-circle {
-            width: 80px; height: 80px;
-            border-radius: 50%;
-            margin: 0 auto 15px;
+            width: 70px; height: 70px; border-radius: 50%;
+            margin: 0 auto 12px;
             background: var(--skeleton);
             animation: pulse 1.5s infinite;
         }
         .skeleton-line {
-            height: 14px;
-            margin-bottom: 10px;
-            background: var(--skeleton);
-            border-radius: 8px;
+            height: 12px; margin-bottom: 8px;
+            background: var(--skeleton); border-radius: 8px;
             animation: pulse 1.5s infinite;
         }
+        .skeleton-line.w30 { width: 30%; margin-left: auto; margin-right: auto; }
         .skeleton-line.w50 { width: 50%; margin-left: auto; margin-right: auto; }
         .skeleton-line.w70 { width: 70%; margin-left: auto; margin-right: auto; }
         .skeleton-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-top: 25px;
+            gap: 8px;
+            margin-top: 18px;
         }
         .skeleton-grid .skeleton-card {
-            height: 70px;
+            height: 60px;
             background: var(--skeleton);
             border-radius: 12px;
             animation: pulse 1.5s infinite;
         }
-        .skeleton-hourly {
-            display: flex;
-            gap: 12px;
+        .skeleton-prayer {
+            margin-top: 12px;
         }
-        .skeleton-hourly .skeleton-h-item {
-            flex: 0 0 60px;
-            height: 80px;
+        .skeleton-prayer .skeleton-p-row {
+            height: 42px;
+            margin-bottom: 4px;
             background: var(--skeleton);
-            border-radius: 8px;
+            border-radius: 10px;
             animation: pulse 1.5s infinite;
         }
 
         @media (max-width: 480px) {
             .details-grid { grid-template-columns: repeat(2, 1fr); }
             .container { padding: 0; }
-            .card { padding: 20px; }
-            .temperature { font-size: 56px; }
-            .weather-icon { font-size: 60px; }
-            .header h1 { font-size: 20px; }
+            .card { padding: 18px; }
+            .temperature { font-size: 52px; }
+            .weather-icon { font-size: 56px; }
+            .header h1 { font-size: 18px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>☀️ Weather</h1>
+            <h1>☀️ Weather & Prayers</h1>
             <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
                 <span class="theme-toggle-icon left">☀️</span>
                 <span class="theme-toggle-icon right">🌙</span>
@@ -356,8 +376,8 @@
 
         <div class="card" id="weatherCard">
             <div id="loadingSkeleton">
+                <div class="skeleton-line w30"></div>
                 <div class="skeleton-line w50"></div>
-                <div class="skeleton-line w70"></div>
                 <div class="skeleton-circle"></div>
                 <div class="skeleton-line w50"></div>
                 <div class="skeleton-line w70"></div>
@@ -367,16 +387,14 @@
                     <div class="skeleton-card"></div>
                     <div class="skeleton-card"></div>
                 </div>
-                <div style="margin-top:20px;">
-                    <div class="skeleton-line w70"></div>
-                    <div class="skeleton-hourly" style="margin-top:10px;">
-                        <div class="skeleton-h-item"></div>
-                        <div class="skeleton-h-item"></div>
-                        <div class="skeleton-h-item"></div>
-                        <div class="skeleton-h-item"></div>
-                        <div class="skeleton-h-item"></div>
-                        <div class="skeleton-h-item"></div>
-                    </div>
+                <div class="skeleton-prayer" style="margin-top:16px;">
+                    <div class="skeleton-line w30"></div>
+                    <div class="skeleton-p-row"></div>
+                    <div class="skeleton-p-row"></div>
+                    <div class="skeleton-p-row"></div>
+                    <div class="skeleton-p-row"></div>
+                    <div class="skeleton-p-row"></div>
+                    <div class="skeleton-p-row"></div>
                 </div>
             </div>
 
@@ -384,7 +402,6 @@
                 <div class="main-weather">
                     <div class="city-name" id="cityName">--</div>
                     <div class="date" id="date"></div>
-                    <div class="country-badge" id="countryBadge"></div>
                     <div class="weather-icon" id="weatherIcon">☀️</div>
                     <div class="temperature" id="temperature">--°C</div>
                     <div class="weather-desc" id="weatherDesc">--</div>
@@ -415,6 +432,34 @@
                         <div class="value" id="sunrise">--</div>
                         <div class="sub" id="sunset">Sunset: --</div>
                     </div>
+                </div>
+
+                <div style="margin-top:20px; border-top:1px solid var(--detail-card); padding-top:16px;">
+                    <div class="prayer-header">
+                        <div>
+                            <div class="section-title">🕌 Prayer Times</div>
+                            <div class="hijri-date" id="hijriDate"></div>
+                        </div>
+                        <select class="method-select" id="methodSelect" onchange="onMethodChange()">
+                            <option value="2">ISNA</option>
+                            <option value="3">Muslim World League</option>
+                            <option value="1">Karachi</option>
+                            <option value="4">Umm al-Qura</option>
+                            <option value="5">Egyptian</option>
+                            <option value="8">Gulf</option>
+                            <option value="9">Kuwait</option>
+                            <option value="10">Qatar</option>
+                            <option value="11">Singapore</option>
+                            <option value="12">France (UOIF)</option>
+                            <option value="13">Turkey (Diyanet)</option>
+                            <option value="14">Russia</option>
+                            <option value="15">Moonsighting</option>
+                            <option value="16">Dubai</option>
+                            <option value="17">Malaysia (JAKIM)</option>
+                            <option value="20">Indonesia</option>
+                        </select>
+                    </div>
+                    <div id="prayerTimesContainer"></div>
                 </div>
             </div>
         </div>
@@ -447,7 +492,7 @@
         <div class="card" id="savedCard">
             <div class="section-title">Saved Cities</div>
             <div id="savedCitiesContainer">
-                <div style="color:var(--text-muted); font-size:14px;" id="noSavedMsg">No saved cities yet</div>
+                <div style="color:var(--text-muted); font-size:13px;" id="noSavedMsg">No saved cities yet</div>
             </div>
             <div class="saved-cities-list" id="savedCitiesList"></div>
         </div>
@@ -485,9 +530,16 @@
             99: { icon: '⛈️', desc: 'Thunderstorm with heavy hail' }
         };
 
-        function getWeatherInfo(code) {
-            return weatherCodes[code] || { icon: '🌤️', desc: 'Unknown' };
-        }
+        const prayerNames = [
+            { key: 'Fajr', icon: '🌙', label: 'Fajr' },
+            { key: 'Sunrise', icon: '🌅', label: 'Sunrise' },
+            { key: 'Dhuhr', icon: '☀️', label: 'Dhuhr' },
+            { key: 'Asr', icon: '🌤️', label: 'Asr' },
+            { key: 'Maghrib', icon: '🌇', label: 'Maghrib' },
+            { key: 'Isha', icon: '🌃', label: 'Isha' }
+        ];
+
+        function getWeatherInfo(code) { return weatherCodes[code] || { icon: '🌤️', desc: 'Unknown' }; }
 
         function getWindDirection(deg) {
             const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
@@ -496,7 +548,7 @@
 
         function formatTime(timeStr) {
             const d = new Date(timeStr);
-            return d.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
+            return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
         }
 
         function formatHour(timeStr) {
@@ -507,16 +559,14 @@
         function formatDay(dateStr) {
             const d = new Date(dateStr);
             const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tmrw = new Date(today); tmrw.setDate(tmrw.getDate() + 1);
             if (d.toDateString() === today.toDateString()) return 'Today';
-            if (d.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
+            if (d.toDateString() === tmrw.toDateString()) return 'Tomorrow';
             return d.toLocaleDateString('en-US', { weekday: 'long' });
         }
 
         function formatDate(dateStr) {
-            const d = new Date(dateStr);
-            return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+            return new Date(dateStr).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
         }
 
         function getUVLabel(uv) {
@@ -527,11 +577,25 @@
             return 'Extreme';
         }
 
+        function convertTo12h(time24) {
+            const [h, m] = time24.split(':').map(Number);
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            const h12 = h % 12 || 12;
+            return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
+        }
+
+        function timeToMinutes(time24) {
+            const [h, m] = time24.split(':').map(Number);
+            return h * 60 + m;
+        }
+
         const GEO_API = 'https://geocoding-api.open-meteo.com/v1/search';
         const WEATHER_API = 'https://api.open-meteo.com/v1/forecast';
+        const PRAYER_API = 'https://api.aladhan.com/v1/timings';
 
         let currentLocation = { lat: 23.588, lon: 58.382, name: 'Muscat, Oman' };
         let isDark = localStorage.getItem('darkMode') === 'true';
+        let prayerTimer = null;
 
         function applyTheme() {
             document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
@@ -549,22 +613,12 @@
             catch { return []; }
         }
 
-        function saveCities(cities) {
-            localStorage.setItem('savedCities', JSON.stringify(cities));
-        }
-
-        function isCitySaved(name) {
-            return getSavedCities().some(c => c.name === name);
-        }
+        function saveCities(cities) { localStorage.setItem('savedCities', JSON.stringify(cities)); }
 
         function addCurrentCity() {
             const cities = getSavedCities();
             if (!cities.some(c => c.name === currentLocation.name)) {
-                cities.push({
-                    name: currentLocation.name,
-                    lat: currentLocation.lat,
-                    lon: currentLocation.lon
-                });
+                cities.push({ name: currentLocation.name, lat: currentLocation.lat, lon: currentLocation.lon });
                 saveCities(cities);
                 renderSavedCities();
             }
@@ -586,15 +640,8 @@
             const cities = getSavedCities();
             const list = document.getElementById('savedCitiesList');
             const msg = document.getElementById('noSavedMsg');
-            const addBtn = document.querySelector('.add-current-btn');
-
-            if (cities.length === 0) {
-                list.innerHTML = '';
-                msg.style.display = 'block';
-                return;
-            }
+            if (cities.length === 0) { list.innerHTML = ''; msg.style.display = 'block'; return; }
             msg.style.display = 'none';
-
             let html = '';
             cities.forEach(c => {
                 html += `<div class="saved-city-chip" onclick="loadSavedCity({lat:${c.lat},lon:${c.lon},name:'${c.name.replace(/'/g,"\\'")}'})">
@@ -602,7 +649,6 @@
                 </div>`;
             });
             list.innerHTML = html;
-
             const curr = currentLocation && currentLocation.name;
             if (curr && !cities.some(c => c.name === curr)) {
                 list.innerHTML += `<div class="add-current-btn" onclick="addCurrentCity()">+ Add "${curr}"</div>`;
@@ -622,40 +668,101 @@
             document.getElementById('errorMessage').textContent = msg;
         }
 
-        function showWeather(data, cityName, country) {
+        function renderPrayerTimes(prayerData) {
+            const container = document.getElementById('prayerTimesContainer');
+            const timings = prayerData.data.timings;
+            const hijri = prayerData.data.date.hijri;
+            document.getElementById('hijriDate').textContent = `${hijri.day} ${hijri.month.en} ${hijri.year} AH`;
+
+            const now = new Date();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+            const prayerTimes = prayerNames.map(p => {
+                const time24 = timings[p.key];
+                const minutes = timeToMinutes(time24);
+                const passed = minutes < currentMinutes;
+                return { ...p, time24, minutes, passed };
+            });
+
+            let nextIdx = prayerTimes.findIndex(p => !p.passed);
+            if (nextIdx === -1) nextIdx = 0;
+
+            let html = '<div id="prayerRows">';
+            prayerTimes.forEach((p, idx) => {
+                const isNext = idx === nextIdx;
+                const cls = isNext ? 'prayer-row next' : p.passed ? 'prayer-row passed' : 'prayer-row';
+                let badge = '';
+                if (isNext) {
+                    const diffMin = p.minutes - currentMinutes;
+                    if (diffMin > 0 && diffMin <= 60) {
+                        badge = `<span class="prayer-remaining">${diffMin} min</span>`;
+                    }
+                    badge += `<span class="prayer-badge">Next</span>`;
+                } else if (p.passed) {
+                    badge = `<span class="prayer-badge">Done</span>`;
+                }
+                html += `<div class="${cls}">
+                    <span class="prayer-icon">${p.icon}</span>
+                    <span class="prayer-name">${p.label}</span>
+                    <span class="prayer-time">${convertTo12h(p.time24)}</span>
+                    ${badge}
+                </div>`;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+
+            if (prayerTimer) clearInterval(prayerTimer);
+            const nextPrayer = prayerTimes[nextIdx];
+            if (nextPrayer) {
+                const diffMs = (nextPrayer.minutes - currentMinutes) * 60 * 1000;
+                if (diffMs > 0) {
+                    prayerTimer = setTimeout(() => {
+                        renderPrayerTimes(prayerData);
+                    }, Math.min(diffMs, 60000));
+                }
+            }
+        }
+
+        async function fetchPrayerTimes(lat, lon) {
+            const method = document.getElementById('methodSelect').value;
+            const url = `${PRAYER_API}?latitude=${lat}&longitude=${lon}&method=${method}`;
+            const res = await fetch(url);
+            return await res.json();
+        }
+
+        function onMethodChange() {
+            if (currentLocation) {
+                fetchPrayerTimes(currentLocation.lat, currentLocation.lon)
+                    .then(d => renderPrayerTimes(d))
+                    .catch(() => {});
+            }
+        }
+
+        function showWeather(data, cityName) {
             document.getElementById('loadingSkeleton').style.display = 'none';
             document.getElementById('weatherContent').style.display = 'block';
             document.getElementById('errorDisplay').style.display = 'none';
 
             const cw = data.current_weather;
             const wi = getWeatherInfo(cw.weathercode);
-            const displayName = country ? `${cityName}, ${country}` : cityName;
+            const displayName = cityName || 'Unknown';
             currentLocation.name = displayName;
 
             document.getElementById('cityName').textContent = displayName;
             document.getElementById('date').textContent = formatDate(cw.time);
-            document.getElementById('countryBadge').textContent = country || '';
             document.getElementById('weatherIcon').textContent = wi.icon;
             document.getElementById('temperature').textContent = `${Math.round(cw.temperature)}°C`;
             document.getElementById('weatherDesc').textContent = wi.desc;
 
-            const feelsLike = data.hourly && data.hourly.apparent_temperature ? data.hourly.apparent_temperature[0] : null;
-            if (feelsLike !== null && feelsLike !== undefined) {
-                document.getElementById('feelsLike').textContent = `Feels like ${Math.round(feelsLike)}°C`;
-            } else {
-                document.getElementById('feelsLike').textContent = '';
-            }
+            const feelsLike = data.hourly?.apparent_temperature?.[0];
+            document.getElementById('feelsLike').textContent = feelsLike != null ? `Feels like ${Math.round(feelsLike)}°C` : '';
 
             document.getElementById('windSpeed').textContent = `${cw.windspeed} km/h`;
             document.getElementById('windDir').textContent = `${getWindDirection(cw.winddirection)} (${cw.winddirection}°)`;
 
-            if (data.hourly && data.hourly.relativehumidity_2m) {
-                document.getElementById('humidity').textContent = `${data.hourly.relativehumidity_2m[0]}%`;
-            } else {
-                document.getElementById('humidity').textContent = '--';
-            }
+            document.getElementById('humidity').textContent = data.hourly?.relativehumidity_2m?.[0] != null ? `${data.hourly.relativehumidity_2m[0]}%` : '--';
 
-            if (data.daily && data.daily.uv_index_max) {
+            if (data.daily?.uv_index_max) {
                 const uv = data.daily.uv_index_max[0];
                 document.getElementById('uvIndex').textContent = uv.toFixed(1);
                 document.getElementById('uvLabel').textContent = getUVLabel(uv);
@@ -664,7 +771,7 @@
                 document.getElementById('uvLabel').textContent = '';
             }
 
-            if (data.daily && data.daily.sunrise) {
+            if (data.daily?.sunrise) {
                 document.getElementById('sunrise').textContent = formatTime(data.daily.sunrise[0]);
                 document.getElementById('sunset').textContent = `Sunset: ${formatTime(data.daily.sunset[0])}`;
             } else {
@@ -675,39 +782,34 @@
             renderHourly(data);
             renderWeekly(data);
             renderSavedCities();
+
+            fetchPrayerTimes(currentLocation.lat, currentLocation.lon)
+                .then(d => renderPrayerTimes(d))
+                .catch(() => {
+                    document.getElementById('prayerTimesContainer').innerHTML =
+                        '<div style="color:var(--text-muted);font-size:13px;text-align:center;">Prayer times unavailable</div>';
+                });
         }
 
         function renderHourly(data) {
             const card = document.getElementById('hourlyCard');
             const container = document.getElementById('hourlyContainer');
-            if (!data.hourly || !data.hourly.time) {
-                card.style.display = 'none';
-                return;
-            }
+            if (!data.hourly?.time) { card.style.display = 'none'; return; }
             card.style.display = 'block';
-
             const now = new Date();
-            const currentHour = now.getHours();
             let startIdx = -1;
             for (let i = 0; i < data.hourly.time.length; i++) {
                 const h = new Date(data.hourly.time[i]);
-                if (h.getHours() >= currentHour && h.toDateString() === now.toDateString()) {
-                    startIdx = i;
-                    break;
-                }
+                if (h.getHours() >= now.getHours() && h.toDateString() === now.toDateString()) { startIdx = i; break; }
             }
             if (startIdx === -1) startIdx = 0;
-
-            const hoursToShow = 24;
             let html = '';
-            for (let i = startIdx; i < Math.min(startIdx + hoursToShow, data.hourly.time.length); i++) {
+            for (let i = startIdx; i < Math.min(startIdx + 24, data.hourly.time.length); i++) {
                 const wi = getWeatherInfo(data.hourly.weathercode[i]);
-                const temp = Math.round(data.hourly.temperature_2m[i]);
-                const time = formatHour(data.hourly.time[i]);
                 html += `<div class="hourly-item">
-                    <div class="time-label">${time}</div>
+                    <div class="time-label">${formatHour(data.hourly.time[i])}</div>
                     <div class="hourly-icon">${wi.icon}</div>
-                    <div class="hourly-temp">${temp}°</div>
+                    <div class="hourly-temp">${Math.round(data.hourly.temperature_2m[i])}°</div>
                 </div>`;
             }
             container.innerHTML = html;
@@ -716,27 +818,18 @@
         function renderWeekly(data) {
             const card = document.getElementById('weeklyCard');
             const container = document.getElementById('weeklyContainer');
-            if (!data.daily || !data.daily.time) {
-                card.style.display = 'none';
-                return;
-            }
+            if (!data.daily?.time) { card.style.display = 'none'; return; }
             card.style.display = 'block';
-
             let html = '';
             for (let i = 0; i < data.daily.time.length; i++) {
                 const wi = getWeatherInfo(data.daily.weathercode[i]);
-                const high = Math.round(data.daily.temperature_2m_max[i]);
-                const low = Math.round(data.daily.temperature_2m_min[i]);
-                const day = formatDay(data.daily.time[i]);
-                const uv = data.daily.uv_index_max ? data.daily.uv_index_max[i].toFixed(1) : '';
-
                 html += `<div class="weekly-item">
-                    <div class="day-name">${day}</div>
+                    <div class="day-name">${formatDay(data.daily.time[i])}</div>
                     <div class="weekly-icon">${wi.icon}</div>
                     <div class="weekly-desc">${wi.desc}</div>
                     <div class="weekly-temps">
-                        <span class="high">${high}°</span>
-                        <span class="low">${low}°</span>
+                        <span class="high">${Math.round(data.daily.temperature_2m_max[i])}°</span>
+                        <span class="low">${Math.round(data.daily.temperature_2m_min[i])}°</span>
                     </div>
                 </div>`;
             }
@@ -746,9 +839,7 @@
         async function fetchGeocoding(query) {
             const url = `${GEO_API}?name=${encodeURIComponent(query)}&count=5&language=en&format=json`;
             const res = await fetch(url);
-            const data = await res.json();
-            if (!data.results || data.results.length === 0) return null;
-            return data.results;
+            return await res.json();
         }
 
         async function fetchWeather(lat, lon) {
@@ -761,11 +852,8 @@
             showLoading();
             try {
                 const data = await fetchWeather(location.lat, location.lon);
-                if (!data || !data.current_weather) {
-                    showError('No weather data available for this location.');
-                    return;
-                }
-                showWeather(data, location.name || 'Unknown', '');
+                if (!data?.current_weather) { showError('No weather data available for this location.'); return; }
+                showWeather(data, location.name || 'Unknown');
             } catch (err) {
                 showError('Failed to fetch weather data. Check your connection and try again.');
             }
@@ -775,49 +863,38 @@
             const input = document.getElementById('cityInput');
             const query = input.value.trim();
             if (!query) return;
-
             showLoading();
             try {
-                const results = await fetchGeocoding(query);
-                if (!results || results.length === 0) {
-                    showError(`City "${query}" not found. Try a different name.`);
-                    return;
-                }
-                const r = results[0];
+                const data = await fetchGeocoding(query);
+                if (!data.results?.length) { showError(`City "${query}" not found. Try a different name.`); return; }
+                const r = data.results[0];
                 currentLocation = {
                     lat: r.latitude,
                     lon: r.longitude,
-                    name: r.displayName ? r.displayName : (r.admin1 ? `${r.name}, ${r.admin1}` : r.name)
+                    name: r.displayName || (r.admin1 ? `${r.name}, ${r.admin1}` : r.name)
                 };
                 input.value = '';
                 await loadWeather(currentLocation);
-            } catch (err) {
-                showError('Failed to search for city. Check your connection.');
-            }
+            } catch (err) { showError('Failed to search for city. Check your connection.'); }
         }
 
         function getLocation() {
-            if (!navigator.geolocation) {
-                loadWeather(currentLocation);
-                return;
-            }
+            if (!navigator.geolocation) { loadWeather(currentLocation); return; }
             navigator.geolocation.getCurrentPosition(
                 async (pos) => {
                     currentLocation.lat = pos.coords.latitude;
                     currentLocation.lon = pos.coords.longitude;
                     currentLocation.name = `${pos.coords.latitude.toFixed(2)}, ${pos.coords.longitude.toFixed(2)}`;
                     try {
-                        const results = await fetchGeocoding(`${pos.coords.latitude},${pos.coords.longitude}`);
-                        if (results && results.length > 0) {
-                            const r = results[0];
+                        const data = await fetchGeocoding(`${pos.coords.latitude},${pos.coords.longitude}`);
+                        if (data.results?.length) {
+                            const r = data.results[0];
                             currentLocation.name = r.displayName || r.name;
                         }
                     } catch {}
                     loadWeather(currentLocation);
                 },
-                () => {
-                    loadWeather(currentLocation);
-                },
+                () => { loadWeather(currentLocation); },
                 { timeout: 10000, enableHighAccuracy: false }
             );
         }
