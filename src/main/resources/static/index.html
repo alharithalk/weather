@@ -878,6 +878,20 @@
             } catch (err) { showError('Failed to search for city. Check your connection.'); }
         }
 
+        async function reverseGeocode(lat, lon) {
+            try {
+                const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`;
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data && data.city) {
+                    const city = data.city;
+                    const country = data.countryName || '';
+                    return country ? `${city}, ${country}` : city;
+                }
+            } catch {}
+            return null;
+        }
+
         function getLocation() {
             if (!navigator.geolocation) { loadWeather(currentLocation); return; }
             navigator.geolocation.getCurrentPosition(
@@ -885,13 +899,8 @@
                     currentLocation.lat = pos.coords.latitude;
                     currentLocation.lon = pos.coords.longitude;
                     currentLocation.name = `${pos.coords.latitude.toFixed(2)}, ${pos.coords.longitude.toFixed(2)}`;
-                    try {
-                        const data = await fetchGeocoding(`${pos.coords.latitude},${pos.coords.longitude}`);
-                        if (data.results?.length) {
-                            const r = data.results[0];
-                            currentLocation.name = r.displayName || r.name;
-                        }
-                    } catch {}
+                    const name = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+                    if (name) currentLocation.name = name;
                     loadWeather(currentLocation);
                 },
                 () => { loadWeather(currentLocation); },
